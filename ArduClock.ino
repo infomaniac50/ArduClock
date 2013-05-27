@@ -59,6 +59,7 @@ boolean doPrintRGB = false;
 LiquidTWI2 lcd(0x20, 1);
 RTC_DS1307 RTC;
 
+//Store our custom degree character in progmem
 FLASH_ARRAY(byte, degreeChar,
   B01100,
   B10010,
@@ -83,19 +84,20 @@ void setup() {
   // set up the LCD's number of rows and columns: 
   lcd.begin(LCD_COLS, LCD_ROWS);
 
+  //Allocate some memory and fetch the character bits for the lcd object
   byte * degree = new byte[degreeChar.count()];
-
   for (int i = 0; i < 8; i++)
     degree[i] = degreeChar[i];
 
   lcd.createChar(0, degree);
-  
+
+  //Don't need this memory anymore. Saves having to allocate a permanent spot on the heap for the character bits.
   delete degree;
 
   lcd.clear();
-
   //Wait for the LCD to clear
   delay(500);
+
   //Do a backlight POST for fun
   setBacklight(255, 0, 0);
   delay(500);
