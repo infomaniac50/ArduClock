@@ -30,6 +30,14 @@
 #include <DallasTemperature.h>
 #include <Flash.h>
 
+// Pin number for OneWire bus
+#define ONE_WIRE_BUS 5
+
+OneWire oneWire(ONE_WIRE_BUS);
+
+DallasTemperature sensors(&oneWire);
+DeviceAddress therm;
+
 //PWM OUTPUT Pins for RGB LCD
 #define REDLITE 3
 #define GREENLITE 9
@@ -39,13 +47,8 @@
 #define LCD_ROWS 2
 #define LCD_COLS 16
 
-// Pin number for OneWire bus
-#define ONE_WIRE_BUS 5
-
-OneWire oneWire(ONE_WIRE_BUS);
-
-DallasTemperature sensors(&oneWire);
-DeviceAddress therm;
+LiquidTWI2 lcd(0x20, 1);
+RTC_DS1307 RTC;
 
 // you can change the overall brightness by range 0 -> 255
 int brightness = 255;
@@ -55,9 +58,6 @@ int brightness = 255;
 #if SERIAL_DEBUG
 boolean doPrintRGB = false;
 #endif
-
-LiquidTWI2 lcd(0x20, 1);
-RTC_DS1307 RTC;
 
 //Store our custom degree character in progmem
 FLASH_ARRAY(byte, degreeChar,
