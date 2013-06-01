@@ -29,6 +29,7 @@
 #include <OneWire.h>
 #include <DallasTemperature.h>
 #include <Flash.h>
+#include <SimpleTimer.h>
 
 // Pin number for OneWire bus
 #define ONE_WIRE_BUS 5
@@ -70,6 +71,9 @@ FLASH_ARRAY(byte, degreeChar,
   B00000,
   B00000,
 );
+
+SimpleTimer timer;
+int printTimeFunc, printTempFunc;
 
 void setup() {
   pinMode(2, INPUT);
@@ -119,7 +123,10 @@ void setup() {
   sensors.begin();
   
   //Find the DS18S20 Temperature Sensor
-  if(!sensors.getAddress(therm, 0)) tmpok = false;
+  if(!sensors.getAddress(therm, 0)) 
+    tmpok = false;
+  else
+    sensors.setResolution(therm, 9);  //Set it to 9-bit resolution
   
   if (tmpok && rtcok)
     setBacklight(0, 255, 0);
@@ -142,32 +149,53 @@ void setup() {
 
   delay(2000);
 
-  //Set it to 9-bit resolution  
-  sensors.setResolution(therm, 9);
+  timer.setInterval(1000, confBacklight);
+
+#if SERIAL_DEBUG
+  timer.setInterval(1000, cmd);
+#endif
+  
+  timer.setInterval(50, whichData);
+
+  printTimeFunc = timer.setInterval(1000, printTime);
+  printTempFunc = timer.setInterval(1000, printTemp);
+  timer.disable(printTempFunc);
+
+  lcd.clear();
 }
 
 void loop() {
-  static boolean last_t = 0;
+  timer.run();
+}
 
-#if SERIAL_DEBUG
-  cmd();
-#endif
+void whichData()
+{
+  static boolean last_pulse = FALSE;
 
-  confBacklight();
+  boolean pulse = digitalRead(2) == HIGH ? TRUE : FALSE;
 
-  boolean t = digitalRead(2) == LOW ? true : false;
+  if (pulse != last_pulse)
+  {
+    if (pulse && !last_pulse)
+    {
+      lcd.clear();
+      
+      timer.toggle(printTimeFunc);
+      timer.toggle(printTempFunc);
+
+      if(timer.isEnabled(printTimeFunc))
+        printTime();
+
+      if(timer.isEnabled(printTempFunc))
+        printTemp();
+
+      last_pulse = TRUE;
+    }
+
+    if(!pulse && last_pulse)
+      last_pulse = FALSE;
+  }
   
-  if (t != last_t)
-    lcd.clear();
-  
-  if (t)
-    printTime();
-  else
-    printTemp();
-  
-  last_t = t;
-  
-  delay(250);
 }
 
 void addLeadingZero(int num) __attribute__((noinline));
