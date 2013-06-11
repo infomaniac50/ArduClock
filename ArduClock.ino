@@ -22,13 +22,12 @@
 */
 
 // include the library code:
-#include <new.h>
 #include <Wire.h>
 #include <RTClib.h>
 #include <LiquidTWI2.h>
 #include <OneWire.h>
 #include <DallasTemperature.h>
-#include <Flash.h>
+#include <avr/pgmspace.h>
 #include <SimpleTimer.h>
 
 // Pin number for OneWire bus
@@ -60,8 +59,13 @@ int brightness = 255;
 boolean doPrintRGB = false;
 #endif
 
+char is_not_word[] PROGMEM = { " NOT" };
+char is_ready_word[] PROGMEM = { " READY" };
+char is_rtc_word[] PROGMEM = { "RTC" };
+char is_tmp_word[] PROGMEM = { "TMP" };
+
 //Store our custom degree character in progmem
-FLASH_ARRAY(byte, degreeChar,
+byte degreeChar[] PROGMEM = {
   B01100,
   B10010,
   B10010,
@@ -69,15 +73,15 @@ FLASH_ARRAY(byte, degreeChar,
   B00000,
   B00000,
   B00000,
-  B00000,
-);
+  B00000
+};
 
 SimpleTimer timer;
 int printTimeFunc, printTempFunc;
 
+volatile boolean needsUpdate = false;
+
 void setup() {
-  pinMode(2, INPUT);
-  
   boolean rtcok = true;
   boolean tmpok = true;
 
@@ -89,14 +93,13 @@ void setup() {
   lcd.begin(LCD_COLS, LCD_ROWS);
 
   //Allocate some memory and fetch the character bits for the lcd object
-  byte * degree = new byte[degreeChar.count()];
-  for (int i = 0; i < 8; i++)
-    degree[i] = degreeChar[i];
+  byte * degree = static_cast<byte*>(malloc(8));
+  memcpy_P(degree, degreeChar, 8);
 
   lcd.createChar(0, degree);
 
   //Don't need this memory anymore. Saves having to allocate a permanent spot on the heap for the character bits.
-  delete degree;
+  free(degree);
 
   lcd.clear();
   //Wait for the LCD to clear
@@ -136,16 +139,34 @@ void setup() {
 
   //Confirm ready with GO/NOGO response
   lcd.setCursor(0, 0);
-  if (rtcok)
-    lcd.print("RTC IS GO");
-  else
-    lcd.print("RTC IS NOGO");
+
+  char * sys_status1;
+  char * sys_status2;
+  char * sys_status3;
+
+  sys_status1 = static_cast<char*>(malloc(strlen_P(is_rtc_word)));
+  sys_status2 = static_cast<char*>(malloc(strlen_P(is_not_word)));
+  sys_status3 = static_cast<char*>(malloc(strlen_P(is_ready_word)));
+
+  strcpy_P(sys_status1, is_rtc_word);
+  strcpy_P(sys_status2, is_not_word);
+  strcpy_P(sys_status3, is_ready_word);
+
+  lcd.print(sys_status1);
+  if (!rtcok)
+    lcd.print(sys_status2);
+  lcd.print(sys_status3);
 
   lcd.setCursor(0, 1);
-  if(tmpok)
-    lcd.print("TEMP IS GO");
-  else
-    lcd.print("TEMP IS NOGO");
+  strcpy_P(sys_status1, is_tmp_word);
+  lcd.print(sys_status1);
+  if(!tmpok)
+    lcd.print(sys_status2);
+  lcd.print(sys_status3);
+
+  free(sys_status1);
+  free(sys_status2);
+  free(sys_status3);
 
   delay(2000);
 
@@ -158,25 +179,44 @@ void setup() {
   timer.setInterval(50, whichData);
 
   printTimeFunc = timer.setInterval(1000, printTime);
-  printTempFunc = timer.setInterval(1000, printTemp);
+  printTempFunc = timer.setInterval(10000, printTemp);
   timer.disable(printTempFunc);
 
   lcd.clear();
+  enableUpdate();
 }
+
+
 
 void loop() {
   timer.run();
+
+  if (needsUpdate)
+  {
+    disableUpdate();
+    whichData();
+    enableUpdate();
+  }
+}
+
+void enableUpdate()
+{
+  attachInterrupt(0, doUpdate, RISING);
+}
+
+void disableUpdate()
+{
+  detachInterrupt(0);
+}
+
+void doUpdate()
+{
+  needsUpdate = TRUE;
 }
 
 void whichData()
 {
-  static boolean last_pulse = FALSE;
-
-  boolean pulse = digitalRead(2) == HIGH ? TRUE : FALSE;
-
-  if (pulse != last_pulse)
-  {
-    if (pulse && !last_pulse)
+    if (needsUpdate)
     {
       lcd.clear();
       
@@ -188,14 +228,9 @@ void whichData()
 
       if(timer.isEnabled(printTempFunc))
         printTemp();
-
-      last_pulse = TRUE;
     }
 
-    if(!pulse && last_pulse)
-      last_pulse = FALSE;
-  }
-  
+  needsUpdate = FALSE;
 }
 
 void addLeadingZero(int num) __attribute__((noinline));
