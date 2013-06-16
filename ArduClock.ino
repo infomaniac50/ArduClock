@@ -79,7 +79,7 @@ byte degreeChar[] PROGMEM = {
 SimpleTimer timer;
 int printTimeFunc, printTempFunc;
 
-volatile boolean needsUpdate = false;
+volatile boolean checkISR = false;
 
 void setup() {
   boolean rtcok = true;
@@ -175,53 +175,60 @@ void setup() {
 #if SERIAL_DEBUG
   timer.setInterval(1000, cmd);
 #endif
-  
-  timer.setInterval(50, whichData);
+
+  // This is not needed since it is done in loop() right?  
+  // timer.setInterval(50, processISR);
 
   printTimeFunc = timer.setInterval(1000, printTime);
   printTempFunc = timer.setInterval(10000, printTemp);
   timer.disable(printTempFunc);
 
   lcd.clear();
-  enableUpdate();
+  enableISR();
 }
-
-
 
 void loop() {
   timer.run();
 
-  if (needsUpdate)
+  if (checkISR)
   {
-    disableUpdate();
-    whichData();
-    enableUpdate();
+    disableISR();
+    processISR();
+    enableISR();
   }
 }
 
-void enableUpdate()
+// These two function enable and disable the pin interrupt.
+// Do the disable/enable interrupt functions affect all ISR functions or just ours?
+void enableISR()
 {
-  attachInterrupt(0, doUpdate, RISING);
+  attachInterrupt(0, setCheckISR, RISING);
 }
 
-void disableUpdate()
+void disableISR()
 {
   detachInterrupt(0);
 }
 
-void doUpdate()
+// This is an external pin ISR function so we dont do much here.
+void setCheckISR()
 {
-  needsUpdate = TRUE;
+  checkISR = TRUE;
 }
 
-void whichData()
+void processISR()
 {
-    if (needsUpdate)
+    if (checkISR)
     {
+      //We are switching data sources here to clear the lcd.
       lcd.clear();
       
+      //Toggle both time and temp update non-async timers.
       timer.toggle(printTimeFunc);
       timer.toggle(printTempFunc);
+
+      //Run the active data function once after clearing the lcd.
+      //Otherwise the lcd wont update until the timer expires.
 
       if(timer.isEnabled(printTimeFunc))
         printTime();
@@ -230,7 +237,8 @@ void whichData()
         printTemp();
     }
 
-  needsUpdate = FALSE;
+  // Set this to false so we dont get timer toggle runaways.
+  checkISR = FALSE;
 }
 
 void addLeadingZero(int num) __attribute__((noinline));
@@ -239,6 +247,6 @@ void addLeadingZero(int num)
 {
   if (num < 10 && num > -10)
   {
-    lcd.print("0");
+    lcd.print('0');
   }
 }
