@@ -1,5 +1,4 @@
-#if SERIAL_DEBUG
-__inline void cmd(){
+void cmd(){
   if (Serial.available() > 0)
   {
     char cmd = Serial.read();
@@ -13,10 +12,12 @@ __inline void cmd(){
           delay(100);
         Serial.println("OK");
         break;
+#if SERIAL_DEBUG        
       case 'b':
       case 'B':
         doPrintRGB = true;
         break;
+#endif        
       default:
         emptySerialBuffer();
         break;
@@ -24,9 +25,8 @@ __inline void cmd(){
   }
 }
 
-void emptySerialBuffer()
+void emptySerialBuffer() 
 {
   while(Serial.available())
     Serial.read();
 }
-#endif

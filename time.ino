@@ -1,4 +1,4 @@
-__inline void printTime()
+void printTime()
 {
   if (RTC.isrunning())
   {
@@ -42,8 +42,7 @@ __inline void printTime()
   }
 }
 
-#if SERIAL_DEBUG
-__inline boolean setTime()
+boolean setTime()
 {
   static int month = 0;
   static int day = 0;
@@ -87,4 +86,3 @@ __inline boolean setTime()
   }
   return true;
 }
-#endif

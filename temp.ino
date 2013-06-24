@@ -1,4 +1,4 @@
-__inline void printTemp()
+void printTemp()
 {
   sensors.requestTemperatures();
   float tempC = sensors.getTempC(therm);

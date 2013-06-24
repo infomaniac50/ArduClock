@@ -22,6 +22,7 @@
 */
 
 // include the library code:
+#include <config.h>
 #include <Wire.h>
 #include <RTClib.h>
 #include <LiquidTWI2.h>
@@ -30,42 +31,32 @@
 #include <avr/pgmspace.h>
 #include <SimpleTimer.h>
 
-// Pin number for OneWire bus
-#define ONE_WIRE_BUS 5
-
 OneWire oneWire(ONE_WIRE_BUS);
 
 DallasTemperature sensors(&oneWire);
 DeviceAddress therm;
 
-//PWM OUTPUT Pins for RGB LCD
-#define REDLITE 3
-#define GREENLITE 9
-#define BLUELITE 11
-
-//LCD Config
-#define LCD_ROWS 2
-#define LCD_COLS 16
-
 LiquidTWI2 lcd(0x20, 1);
 RTC_DS1307 RTC;
 
-// you can change the overall brightness by range 0 -> 255
-int brightness = 255;
-
-#define SERIAL_DEBUG 0
+struct BacklightSettings {
+  byte brightness;
+  byte red;
+  byte green;
+  byte blue;
+};
 
 #if SERIAL_DEBUG
 boolean doPrintRGB = false;
 #endif
 
-char is_not_word[] PROGMEM = { " NOT" };
-char is_ready_word[] PROGMEM = { " READY" };
-char is_rtc_word[] PROGMEM = { "RTC" };
-char is_tmp_word[] PROGMEM = { "TMP" };
+const char is_not_word[] PROGMEM = { " NOT" };
+const char is_ready_word[] PROGMEM = { " READY" };
+const char is_rtc_word[] PROGMEM = { "RTC" };
+const char is_tmp_word[] PROGMEM = { "TMP" };
 
 //Store our custom degree character in progmem
-byte degreeChar[] PROGMEM = {
+const byte degreeChar[] PROGMEM = {
   B01100,
   B10010,
   B10010,
@@ -81,20 +72,20 @@ int printTimeFunc, printTempFunc;
 
 volatile boolean checkISR = false;
 
+BacklightSettings settings;
+
 void setup() {
   boolean rtcok = true;
   boolean tmpok = true;
 
-#if SERIAL_DEBUG
   Serial.begin(9600);
-#endif
 
   // set up the LCD's number of rows and columns: 
   lcd.begin(LCD_COLS, LCD_ROWS);
 
   //Allocate some memory and fetch the character bits for the lcd object
-  byte * degree = static_cast<byte*>(malloc(8));
-  memcpy_P(degree, degreeChar, 8);
+  byte * degree = static_cast<byte*>(malloc(LCD_CHAR_ROWS));
+  memcpy_P(degree, degreeChar, LCD_CHAR_ROWS);
 
   lcd.createChar(0, degree);
 
@@ -105,6 +96,7 @@ void setup() {
   //Wait for the LCD to clear
   delay(500);
 
+  settings.brightness = 255;
   //Do a backlight POST for fun
   setBacklight(255, 0, 0);
   delay(500);
@@ -172,9 +164,7 @@ void setup() {
 
   timer.setInterval(1000, confBacklight);
 
-#if SERIAL_DEBUG
   timer.setInterval(1000, cmd);
-#endif
 
   // This is not needed since it is done in loop() right?  
   // timer.setInterval(50, processISR);
@@ -200,12 +190,12 @@ void loop() {
 
 // These two function enable and disable the pin interrupt.
 // Do the disable/enable interrupt functions affect all ISR functions or just ours?
-void enableISR()
+inline void enableISR()
 {
   attachInterrupt(0, setCheckISR, RISING);
 }
 
-void disableISR()
+inline void disableISR()
 {
   detachInterrupt(0);
 }
@@ -216,7 +206,7 @@ void setCheckISR()
   checkISR = TRUE;
 }
 
-void processISR()
+inline void processISR()
 {
     if (checkISR)
     {
@@ -240,8 +230,6 @@ void processISR()
   // Set this to false so we dont get timer toggle runaways.
   checkISR = FALSE;
 }
-
-void addLeadingZero(int num) __attribute__((noinline));
 
 void addLeadingZero(int num)
 {

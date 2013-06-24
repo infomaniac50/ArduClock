@@ -1,11 +1,25 @@
-__inline void setBacklight(uint8_t r, uint8_t g, uint8_t b) {
-  // normalize the red LED - its brighter than the rest!  
+void setBacklight(byte r, byte g, byte b)
+{
+  settings.red = r;
+  settings.green = g;
+  settings.blue = b;
+
+  setBacklight();
+}
+
+void setBacklight() {
+  byte r = settings.red;
+  byte g = settings.green;
+  byte b = settings.blue;
+  byte t = settings.brightness;
+
+  // normalize the red LED - its brighter than the rest!
   r = map(r, 0, 255, 0, 100);
   g = map(g, 0, 255, 0, 150);
  
-  r = map(r, 0, 255, 0, brightness);
-  g = map(g, 0, 255, 0, brightness);
-  b = map(b, 0, 255, 0, brightness);    
+  r = map(r, 0, 255, 0, t);
+  g = map(g, 0, 255, 0, t);
+  b = map(b, 0, 255, 0, t);    
  
   // common anode so invert!
   r = map(r, 0, 255, 255, 0);
@@ -28,15 +42,16 @@ __inline void setBacklight(uint8_t r, uint8_t g, uint8_t b) {
   analogWrite(BLUELITE, b);
 }
 
-__inline void confBacklight()
+void confBacklight()
 {
   int R = analogRead(A0);
   int G = analogRead(A1);
   int B = analogRead(A2);
   int I = analogRead(A3);
-  R = map(R, 0, 1023, 0, 255);
-  G = map(G, 0, 1023, 0, 255);
-  B = map(B, 0, 1023, 0, 255);
-  brightness = map(I, 0, 1023, 0, 255);
-  setBacklight(R,G,B);  
+
+  settings.red = byte(map(R, 0, 1023, 0, 255));
+  settings.green = byte(map(G, 0, 1023, 0, 255));
+  settings.blue = byte(map(B, 0, 1023, 0, 255));
+  settings.brightness = byte(map(I, 0, 1023, 0, 255));
+  setBacklight();
 }
