@@ -1,5 +1,6 @@
 ## Clockduino
-Derek Chafin - adm<a href="http://www.google.com/recaptcha/mailhide/d?k=01OXKnU7CCBN1-JDBRT1KLwg==&amp;c=5-SaSHo7gY3iKjayNH6yNesVq7JrJafsf5vcBWdQnl4=" onclick="window.open('http://www.google.com/recaptcha/mailhide/d?k\07501OXKnU7CCBN1-JDBRT1KLwg\75\75\46c\0755-SaSHo7gY3iKjayNH6yNesVq7JrJafsf5vcBWdQnl4\075', '', 'toolbar=0,scrollbars=0,location=0,statusbar=0,menubar=0,resizable=0,width=500,height=300'); return false;" title="Reveal this e-mail address">...</a>@coding-squared.com
+Derek Chafin - 
+[My Email](http://www.google.com/recaptcha/mailhide/d?k=01OXKnU7CCBN1-JDBRT1KLwg==&c=5-SaSHo7gY3iKjayNH6yNesVq7JrJafsf5vcBWdQnl4= "Google reCaptcha")
 
 
 ### Description
