@@ -22,7 +22,7 @@
 */
 
 // include the library code:
-#include <config.h>
+#include "config.h"
 #include <Wire.h>
 #include <RTClib.h>
 #include <LiquidTWI2.h>
