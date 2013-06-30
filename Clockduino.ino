@@ -233,7 +233,7 @@ inline void processISR()
 
 void addLeadingZero(int num)
 {
-  if (num < 10 && num > -10)
+  if (abs(num) < 10)
   {
     lcd.print('0');
   }
