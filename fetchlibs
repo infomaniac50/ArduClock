@@ -1,14 +1,96 @@
 #!/bin/bash
 
-echo "Fetching libraries not available with git"
+function cerf {
+  if [[ -f "$1" ]]; then
+    echo "Refusing to overwrite your $1 file."
+    exit 1
+  fi
+}
 
+function cerd {
+  if [[ -d "$1" ]]; then
+    echo "Refusing to overwrite your $1 directory."
+    exit 1
+  fi
+}
+
+function entcd {
+  echo 'Entering directory '"$1"
+  cd "$1" || exit 1
+}
+
+function leacd {
+  echo 'Leaving directory '"${PWD##*/}"
+  cd ..
+}
+
+function cerfdl {
+  local URL="$1"
+  local FILENAME=${URL##*/}
+  cerf "$FILENAME"
+  # wget -O $FILENAME $URL || exit 1
+  curl "$URL" > "$FILENAME" || exit 1
+}
+
+if [[ ! -f 'Clockduino.ino' ]]; then
+  echo "You must run this script from the sketch directory."
+  exit 1
+fi
+
+cd ..
+
+if [[ ! -d 'libraries' ]]; then
+  echo "You must create a libraries directory for your Arduino sketch folder."
+  exit 1
+fi
+
+echo 'Clockduino Library Fetcher'
+echo 'v0.1'
+echo 'admin@coding-squared.com'
+
+# Fetch required libraries
+entcd 'libraries'
+
+echo "Fetching HTTP download libraries\n"
+
+# Fetch OneWire library
 echo "Fetching OneWire library"
-wget -O OneWire.zip http://www.pjrc.com/teensy/arduino_libraries/OneWire.zip
+cerfdl 'http://www.pjrc.com/teensy/arduino_libraries/OneWire.zip'
+# Extract OneWire.zip
+cerd 'OneWire'
+unzip 'OneWire.zip'
 
+echo "Fetching git libraries\n"
+
+# Fetch the DallasTemperature library
 echo "Fetching DallasTemperature library"
-wget -O DallasTemperature.zip http://download.milesburton.com/Arduino/MaximTemperature/DallasTemperature_LATEST.zip
+cerd 'DallasTemperature'
+git clone 'https://github.com/infomaniac50/Arduino-Temperature-Control-Library.git' 'DallasTemperature' || exit 1
 
+# Use our branch
+# cd 'DallasTemperature'
+entcd 'DallasTemperature'
+git co clockduino || exit 1
+leacd
+# cd ..
 
+# Fetch the RTClib library
+echo "Fetching RTClib library"
+cerd 'RTClib'
+git clone 'https://github.com/jpbot/RTClib.git' || exit 1
 
-echo ""
-echo "Please unzip the two zip files in "`pwd`" to your arduino library folder."
+# Fetch the LiquidTWI2 library
+echo "Fetching LiquidTWI2 library"
+cerd 'LiquidTWI2'
+git clone 'https://github.com/infomaniac50/LiquidTWI2.git' || exit 1
+
+# Use our branch
+# cd 'LiquidTWI2'
+entcd 'LiquidTWI2'
+git co clockduino || exit 1
+leacd
+
+# Fetch the SimpleTimer library
+echo "Fetching SimpleTimer library"
+cerd 'SimpleTimer'
+git clone 'https://github.com/infomaniac50/SimpleTimer.git' || exit 1
