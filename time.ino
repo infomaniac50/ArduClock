@@ -19,23 +19,16 @@ void printTime()
     lcd.print(now.year(), DEC);
   
     lcd.setCursor(6, 1);
-    int hour = now.hour();
-    boolean PM = false;
-    if (hour > 11)
-      PM = true;
-    
-    if (hour > 12)
-      hour -= 12;
-      
-    addLeadingZero(hour);
-    lcd.print(hour, DEC);
+        
+    addLeadingZero(now.hour());
+    lcd.print(now.hour(), DEC);
     lcd.print(":");
     addLeadingZero(now.minute());
     lcd.print(now.minute(), DEC);
     lcd.print(":");
     addLeadingZero(now.second());
     lcd.print(now.second(), DEC);
-    if (PM)
+    if (now.isPM())
       lcd.print("PM");
     else
       lcd.print("AM");
@@ -50,7 +43,8 @@ boolean setTime()
   static int hour = 0;
   static int minute = 0;
   static int second = 0;
-  
+  static boolean pm = false;
+
   if (Serial.available() > 0)
   {
     char cmd = Serial.read();
@@ -75,8 +69,11 @@ boolean setTime()
       case 's':
         second = Serial.parseInt();
         break;
+      case 't':
+        pm = Serial.parseInt() != 0;
+        break;
       case '+':
-        RTC.adjust(DateTime(year,month,day,hour,minute,second));
+        RTC.adjust(DateTime(year,month,day,hour,minute,second,pm));
         return false;
         break;
       default:
