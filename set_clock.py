@@ -3,8 +3,17 @@ import time
 
 def getRTCTime ():
 	t = time.localtime()
-	tfstr =	"M%-mD%-dY%Yh%-Hm%-Ms%-S"
+	tfstr =	"M%-mD%-dY%Yh%-Im%-Ms%-S"
 	ts = time.strftime(tfstr, t)
+	pm = time.strftime("%p", t)
+
+
+	if pm == 'AM':
+		ts += 't0'
+	elif pm == 'PM':
+		ts += 't1'
+	else:
+		ts += 't0'
 
 	ts += '+'
 
