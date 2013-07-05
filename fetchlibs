@@ -97,7 +97,7 @@ git clone $PROTOCOL$BASE'infomaniac50/RTClib.git' || exit 1
 # Use our branch
 # cd 'RTClib'
 entcd 'RTClib'
-git co clockduino || exit 1
+git co clock2412 || exit 1
 leacd
 
 # Fetch the LiquidTWI2 library
