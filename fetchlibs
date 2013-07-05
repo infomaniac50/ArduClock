@@ -32,6 +32,22 @@ function cerfdl {
   curl "$URL" > "$FILENAME" || exit 1
 }
 
+PROTOCOL='https'
+
+if [[ -n "$1" ]]; then
+  PROTOCOL="$1"
+  shift
+fi
+
+case "$PROTOCOL" in
+  https)
+    BASE='://github.com/'
+    ;;
+  git)
+    BASE='@github.com:'
+    ;;
+esac
+
 if [[ ! -f 'Clockduino.ino' ]]; then
   echo "You must run this script from the sketch directory."
   exit 1
@@ -65,24 +81,29 @@ echo "Fetching git libraries\n"
 # Fetch the DallasTemperature library
 echo "Fetching DallasTemperature library"
 cerd 'DallasTemperature'
-git clone 'https://github.com/infomaniac50/Arduino-Temperature-Control-Library.git' 'DallasTemperature' || exit 1
+git clone $PROTOCOL$BASE'infomaniac50/Arduino-Temperature-Control-Library.git' 'DallasTemperature' || exit 1
 
 # Use our branch
 # cd 'DallasTemperature'
 entcd 'DallasTemperature'
 git co clockduino || exit 1
 leacd
-# cd ..
 
 # Fetch the RTClib library
 echo "Fetching RTClib library"
 cerd 'RTClib'
-git clone 'https://github.com/jpbot/RTClib.git' || exit 1
+git clone $PROTOCOL$BASE'infomaniac50/RTClib.git' || exit 1
+
+# Use our branch
+# cd 'RTClib'
+entcd 'RTClib'
+git co clockduino || exit 1
+leacd
 
 # Fetch the LiquidTWI2 library
 echo "Fetching LiquidTWI2 library"
 cerd 'LiquidTWI2'
-git clone 'https://github.com/infomaniac50/LiquidTWI2.git' || exit 1
+git clone $PROTOCOL$BASE'infomaniac50/LiquidTWI2.git' || exit 1
 
 # Use our branch
 # cd 'LiquidTWI2'
@@ -93,4 +114,4 @@ leacd
 # Fetch the SimpleTimer library
 echo "Fetching SimpleTimer library"
 cerd 'SimpleTimer'
-git clone 'https://github.com/infomaniac50/SimpleTimer.git' || exit 1
+git clone $PROTOCOL$BASE'infomaniac50/SimpleTimer.git' || exit 1
