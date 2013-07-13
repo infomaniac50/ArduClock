@@ -37,9 +37,9 @@ void setBacklight() {
   doPrintRGB = false;
 #endif
 
-  analogWrite(REDLITE, r);
-  analogWrite(GREENLITE, g);
-  analogWrite(BLUELITE, b);
+  analogWrite(LCD_RED_PIN, r);
+  analogWrite(LCD_GREEN_PIN, g);
+  analogWrite(LCD_BLUE_PIN, b);
 }
 
 void confBacklight()
