@@ -78,16 +78,16 @@ void isIncOrDecPressed()
     switch(rf_backlight_index)
     {
       case 0:
-        data_p = &settings.brightness;
+        data_p = &clockduino_t.backlight.brightness;
         break;
       case 1:
-        data_p = &settings.red;
+        data_p = &clockduino_t.backlight.red;
         break;
       case 2:
-        data_p = &settings.green;
+        data_p = &clockduino_t.backlight.green;
         break;
       case 3:
-        data_p = &settings.blue;
+        data_p = &clockduino_t.backlight.blue;
         break;
       default:
         break;
@@ -101,7 +101,7 @@ void isIncOrDecPressed()
         data++;
       else
       {
-        PulseLcdBacklight(MAX_ALL - settings.red, MAX_ALL - settings.green, MAX_ALL - settings.blue, 0);
+        PulseLcdBacklight(MAX_ALL - clockduino_t.backlight.red, MAX_ALL - clockduino_t.backlight.green, MAX_ALL - clockduino_t.backlight.blue, 0);
         return;
       }
     }
@@ -111,7 +111,7 @@ void isIncOrDecPressed()
         data--;
       else
       {
-        PulseLcdBacklight(MAX_ALL + settings.red, MAX_ALL + settings.green, MAX_ALL + settings.blue, 0);
+        PulseLcdBacklight(MAX_ALL + clockduino_t.backlight.red, MAX_ALL + clockduino_t.backlight.green, MAX_ALL + clockduino_t.backlight.blue, 0);
         return;
       }
     }

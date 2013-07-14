@@ -32,7 +32,7 @@ inline BacklightSettings MapLcdSettings(BacklightSettings settings)
 
 inline void MapLcdSettings()
 {
-  mapped = MapLcdSettings(settings);
+  mapped = MapLcdSettings(clockduino_t.backlight);
 }
 
 inline void PulseLcdBacklight(byte r, byte g, byte b, int duration)

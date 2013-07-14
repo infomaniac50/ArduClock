@@ -25,14 +25,14 @@ void LoadSettings()
     return;
   }
 
-  byte * p = (byte*)(&settings);
+  byte * p = (byte*)(&clockduino_t);
 
   ReadEEPROM(EEPROM_HASH_SIZE, sizeof(BacklightSettings), p);
 }
 
 void SaveSettings()
 {
-  byte * p = (byte*)(&settings);
+  byte * p = (byte*)(&clockduino_t);
 
   WriteEEPROM(EEPROM_HASH_SIZE, sizeof(BacklightSettings), p);
 }
@@ -65,9 +65,9 @@ boolean isSettingsValid()
 
 void LoadDefaultSettings()
 {
-  settings.red = 255;
-  settings.green = 255;
-  settings.blue = 255;
-  settings.brightness = 255;
-  rf_settings_delay = 5;
+  clockduino_t.backlight.red = 255;
+  clockduino_t.backlight.green = 255;
+  clockduino_t.backlight.blue = 255;
+  clockduino_t.backlight.brightness = 255;
+  clockduino_t.button_delay = 5;
 }

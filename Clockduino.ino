@@ -46,7 +46,12 @@ struct BacklightSettings {
   byte red;
   byte green;
   byte blue;
-}settings, mapped;
+}mapped;
+
+struct ClockSettings {
+  int button_delay;
+  BacklightSettings backlight;
+}clockduino_t;
 
 #if SERIAL_DEBUG
 boolean doPrintRGB = false;
@@ -74,7 +79,6 @@ int printTimeFunc, printTempFunc, rf_settings_timer, rf_incdec_timer;
 
 volatile boolean checkISR = false;
 
-int rf_settings_delay;
 byte rf_backlight_index = -1;
 
 void setup() {
@@ -178,7 +182,7 @@ void setup() {
 
   rf_settings_timer = timer.setInterval(250, isSettingsPressed);
 
-  rf_incdec_timer = timer.setInterval(rf_settings_delay, isIncOrDecPressed);
+  rf_incdec_timer = timer.setInterval(clockduino_t.button_delay, isIncOrDecPressed);
   timer.disable(rf_incdec_timer);
 
   enableISR();

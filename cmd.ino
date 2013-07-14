@@ -15,7 +15,8 @@ void cmd(){
       case 'd':
       case 'D':
         Serial.println("OK");
-        rf_settings_delay = Serial.parseInt();
+        clockduino_t.button_delay = Serial.parseInt();
+        Serial.println(clockduino_t.button_delay);
 #if SERIAL_DEBUG        
       case 'b':
       case 'B':
