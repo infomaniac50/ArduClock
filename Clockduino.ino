@@ -46,7 +46,7 @@ struct BacklightSettings {
   byte red;
   byte green;
   byte blue;
-};
+}settings, mapped;
 
 #if SERIAL_DEBUG
 boolean doPrintRGB = false;
@@ -73,9 +73,6 @@ SimpleTimer timer;
 int printTimeFunc, printTempFunc, rf_settings_timer, rf_incdec_timer;
 
 volatile boolean checkISR = false;
-
-BacklightSettings settings;
-BacklightSettings mapped;
 
 int rf_settings_delay;
 byte rf_backlight_index = -1;
