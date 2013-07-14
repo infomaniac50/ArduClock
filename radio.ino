@@ -33,6 +33,11 @@ void isSettingsPressed()
         PulseLcdBacklight(MAX_ALL, MIN_ALL, MIN_ALL, 250);
         PulseLcdBacklight(MIN_ALL, MAX_ALL, MIN_ALL, 250);
         PulseLcdBacklight(MIN_ALL, MIN_ALL, MAX_ALL, 250);
+
+        if(settingsStatusOn(pulseIn(RF_SETTINGS_PIN, HIGH, 4000000)))
+          SaveSettings();
+
+        settingsStatusOff();
       }
       else
       {

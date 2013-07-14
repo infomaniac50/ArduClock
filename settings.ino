@@ -1,66 +1,87 @@
 // settings.ino
-void ReadEEPROM(int address, int length, byte * data)
+
+
+boolean settingsStatusOn(boolean value, int status_delay)
 {
-  int start_address = address + EEPROM_OFFSET;
-  int end_address = start_address + length;
-  for(int i = start_address; i < end_address; i++)
-    data[i] = EEPROM.read(i);
+  if (value)
+    digitalWrite(STATUS_TRUE, HIGH);
+  else
+    digitalWrite(STATUS_FALSE, HIGH);
+
+  delay(status_delay);
+
+  return value;
 }
 
-void WriteEEPROM(int address, int length, byte * data)
+boolean settingsStatusOn(boolean value)
 {
-  int start_address = address + EEPROM_OFFSET;
-  int end_address = start_address + length;
-  for(int i = start_address; i < end_address; i++)
-    EEPROM.write(i, data[i]);
+  return settingsStatusOn(value, 500);
+}
+
+void settingsStatusOff()
+{
+  digitalWrite(STATUS_TRUE, LOW);
+  digitalWrite(STATUS_FALSE, LOW);
+}
+
+template <class T> int readBlock(int address, const T& value)
+{   
+  eeprom_read_block((void*)&value, (const void*)address, sizeof(value));
+  return sizeof(value);
+}
+
+template <class T> int writeBlock(int address, const T& value)
+{
+  eeprom_write_block((void*)&value, (void*)address, sizeof(value));               
+  return sizeof(value);
 }
 
 void LoadSettings()
 {
-  if(!isSettingsValid())
+  if(settingsStatusOn(isSettingsValid()))
+  {
+    readBlock(EEPROM_HASH_SIZE + EEPROM_OFFSET, clockduino_t);
+  }
+  else
   {
     LoadDefaultSettings();
-    SaveSettings();
+    uint64_t e;
+    getPROGMEMHash(&e);
+    setEEPROMHash(&e);
 
-    return;
+    SaveSettings();
   }
 
-  byte * p = (byte*)(&clockduino_t);
-
-  ReadEEPROM(EEPROM_HASH_SIZE, sizeof(BacklightSettings), p);
+  settingsStatusOff();
 }
 
 void SaveSettings()
 {
-  byte * p = (byte*)(&clockduino_t);
+  writeBlock(EEPROM_HASH_SIZE + EEPROM_OFFSET, clockduino_t);
+}
 
-  WriteEEPROM(EEPROM_HASH_SIZE, sizeof(BacklightSettings), p);
+void getEEPROMHash(uint64_t * hash)
+{
+  readBlock(EEPROM_OFFSET, *hash);
+}
+
+void setEEPROMHash(uint64_t * hash)
+{
+  writeBlock(EEPROM_OFFSET, *hash);
+}
+
+void getPROGMEMHash(uint64_t * hash)
+{
+  memcpy_P(hash, &EEPROM_HASH, EEPROM_HASH_SIZE);
 }
 
 boolean isSettingsValid()
 {
-  boolean is_valid = true;
-  byte * m;
-  byte * n;
-
-  m = new byte(EEPROM_HASH_SIZE);
-  n = new byte(EEPROM_HASH_SIZE);
-  ReadEEPROM(0, EEPROM_HASH_SIZE, m);
-  memcpy_P(n, &EEPROM_HASH, EEPROM_HASH_SIZE);
-
-  for(uint16_t i = 0; i < EEPROM_HASH_SIZE; i++)
-  {
-    if (*n != *m)
-      is_valid = false;
-
-    n++;
-    m++;
-  }
-
-  delete(m);
-  delete(n);
-
-  return is_valid;
+  uint64_t e;
+  uint64_t p;
+  getEEPROMHash(&e);
+  getPROGMEMHash(&p);
+  return e == p;
 }
 
 void LoadDefaultSettings()

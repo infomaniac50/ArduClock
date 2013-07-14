@@ -30,7 +30,7 @@
 #include <DallasTemperature.h>
 #include <avr/pgmspace.h>
 #include <SimpleTimer.h>
-#include <EEPROM.h>
+#include <avr/eeprom.h>
 #include <new.h>
 
 OneWire oneWire(ONE_WIRE_BUS);
@@ -89,6 +89,9 @@ void setup() {
   pinMode(RF_INCREMENT_PIN, INPUT_PULLUP);
   pinMode(RF_DECREMENT_PIN, INPUT_PULLUP);
 
+  pinMode(STATUS_TRUE, OUTPUT);
+  pinMode(STATUS_FALSE, OUTPUT);
+  
   Serial.begin(9600);
 
   // set up the LCD's number of rows and columns: 
