@@ -44,7 +44,7 @@ struct BacklightSettings {
   byte red;
   byte green;
   byte blue;
-};
+}settings;
 
 #if SERIAL_DEBUG
 boolean doPrintRGB = false;
@@ -71,8 +71,6 @@ SimpleTimer timer;
 int printTimeFunc, printTempFunc;
 
 volatile boolean checkISR = false;
-
-BacklightSettings settings;
 
 void setup() {
   boolean rtcok = true;
