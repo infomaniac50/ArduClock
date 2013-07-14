@@ -27,9 +27,24 @@ const byte MIN_ALL = 0;
 const byte MAX_RED = 150;
 const byte MAX_GREEN = 100;
 
+struct BacklightSettings {
+  byte brightness;
+  byte red;
+  byte green;
+  byte blue;
+};
+
+struct ClockSettings {
+  int button_delay;
+  BacklightSettings backlight;
+};
+
+const uint16_t EEPROM_OFFSET = 0x10;
 const uint64_t EEPROM_HASH PROGMEM = 0x30AE885F78E5FCD8ULL;
 const size_t EEPROM_HASH_SIZE = sizeof(uint64_t);
-const uint16_t EEPROM_OFFSET = 0x10;
+const size_t EEPROM_DATA_SIZE = sizeof(ClockSettings);
+#define EEPROM_HASH_OFFSET EEPROM_OFFSET + sizeof(size_t)
+#define EEPROM_DATA_OFFSET EEPROM_HASH_OFFSET + EEPROM_HASH_SIZE
 
 byte map(byte x, byte in_min, byte in_max, byte out_min, byte out_max)
 {

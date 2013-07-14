@@ -41,17 +41,8 @@ DeviceAddress therm;
 LiquidTWI2 lcd(0x20, 1);
 RTC_DS1307 RTC;
 
-struct BacklightSettings {
-  byte brightness;
-  byte red;
-  byte green;
-  byte blue;
-}mapped;
-
-struct ClockSettings {
-  int button_delay;
-  BacklightSettings backlight;
-}clockduino_t;
+BacklightSettings mapped;
+ClockSettings clockduino_t;
 
 #if SERIAL_DEBUG
 boolean doPrintRGB = false;

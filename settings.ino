@@ -40,7 +40,7 @@ void LoadSettings()
 {
   if(settingsStatusOn(isSettingsValid()))
   {
-    readBlock(EEPROM_HASH_SIZE + EEPROM_OFFSET, clockduino_t);
+    readBlock(EEPROM_DATA_OFFSET, clockduino_t);
   }
   else
   {
@@ -57,17 +57,27 @@ void LoadSettings()
 
 void SaveSettings()
 {
-  writeBlock(EEPROM_HASH_SIZE + EEPROM_OFFSET, clockduino_t);
+  writeBlock(EEPROM_DATA_OFFSET, clockduino_t);
 }
 
 void getEEPROMHash(uint64_t * hash)
 {
-  readBlock(EEPROM_OFFSET, *hash);
+  size_t data_size;
+  readBlock(EEPROM_OFFSET, data_size);
+
+  if (data_size != EEPROM_DATA_SIZE)
+  {
+    *hash = 0;
+    return;
+  }
+
+  readBlock(EEPROM_HASH_OFFSET, *hash);
 }
 
 void setEEPROMHash(uint64_t * hash)
 {
-  writeBlock(EEPROM_OFFSET, *hash);
+  writeBlock(EEPROM_OFFSET, EEPROM_DATA_SIZE);
+  writeBlock(EEPROM_HASH_OFFSET, *hash);
 }
 
 void getPROGMEMHash(uint64_t * hash)
