@@ -30,6 +30,8 @@
 #include <DallasTemperature.h>
 #include <avr/pgmspace.h>
 #include <SimpleTimer.h>
+#include <EEPROM.h>
+#include <new.h>
 
 OneWire oneWire(ONE_WIRE_BUS);
 
@@ -68,15 +70,23 @@ const byte degreeChar[] PROGMEM = {
 };
 
 SimpleTimer timer;
-int printTimeFunc, printTempFunc;
+int printTimeFunc, printTempFunc, rf_settings_timer, rf_incdec_timer;
 
 volatile boolean checkISR = false;
 
 BacklightSettings settings;
+BacklightSettings mapped;
+
+int rf_settings_delay;
+byte rf_backlight_index = -1;
 
 void setup() {
   boolean rtcok = true;
   boolean tmpok = true;
+
+  pinMode(RF_SETTINGS_PIN, INPUT_PULLUP);
+  pinMode(RF_INCREMENT_PIN, INPUT_PULLUP);
+  pinMode(RF_DECREMENT_PIN, INPUT_PULLUP);
 
   Serial.begin(9600);
 
@@ -96,16 +106,11 @@ void setup() {
   //Wait for the LCD to clear
   delay(500);
 
-  settings.brightness = 255;
   //Do a backlight POST for fun
-  setBacklight(255, 0, 0);
-  delay(500);
-  setBacklight(0, 255, 0);
-  delay(500);
-  setBacklight(0, 0, 255);
-  delay(500);
-  setBacklight(255, 255, 255);
-  delay(500);  
+  PulseLcdBacklight(MAX_ALL, MIN_ALL, MIN_ALL, 500);
+  PulseLcdBacklight(MIN_ALL, MAX_ALL, MIN_ALL, 500);
+  PulseLcdBacklight(MIN_ALL, MIN_ALL, MAX_ALL, 500);
+  PulseLcdBacklight(MAX_ALL, MAX_ALL, MAX_ALL, 500);
 
   RTC.begin();
   // Print a message to the LCD.
@@ -123,12 +128,6 @@ void setup() {
   else
     sensors.setResolution(therm, 9);  //Set it to 9-bit resolution
   
-  if (tmpok && rtcok)
-    setBacklight(0, 255, 0);
-  else
-    setBacklight(255, 0, 0);
-  
-
   //Confirm ready with GO/NOGO response
   lcd.setCursor(0, 0);
 
@@ -160,9 +159,14 @@ void setup() {
   free(sys_status2);
   free(sys_status3);
 
-  delay(2000);
+  if (tmpok && rtcok)
+    PulseLcdBacklight(0, 255, 0, 2000);
+  else
+    PulseLcdBacklight(255, 0, 0, 2000);
 
-  timer.setInterval(1000, confBacklight);
+  LoadSettings();
+  MapLcdSettings();
+  SetLcdBacklight();
 
   timer.setInterval(1000, cmd);
 
@@ -174,6 +178,12 @@ void setup() {
   timer.disable(printTempFunc);
 
   lcd.clear();
+
+  rf_settings_timer = timer.setInterval(250, isSettingsPressed);
+
+  rf_incdec_timer = timer.setInterval(rf_settings_delay, isIncOrDecPressed);
+  timer.disable(rf_incdec_timer);
+
   enableISR();
 }
 

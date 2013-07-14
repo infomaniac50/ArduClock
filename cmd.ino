@@ -12,6 +12,10 @@ void cmd(){
           delay(100);
         Serial.println("OK");
         break;
+      case 'd':
+      case 'D':
+        Serial.println("OK");
+        rf_settings_delay = Serial.parseInt();
 #if SERIAL_DEBUG        
       case 'b':
       case 'B':
