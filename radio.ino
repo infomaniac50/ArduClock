@@ -26,7 +26,6 @@ void isSettingsPressed()
     if (pressed)
     {
       rf_backlight_index++;
-      Serial.println(rf_backlight_index);
       if (RF_NONE)
       {
         rf_backlight_index = (byte)-1;
