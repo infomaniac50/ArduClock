@@ -8,7 +8,8 @@ void cmd(){
       case 'S':
         Serial.println("OK");
         Serial.println("Starting date/time entry mode");
-        while(setTime())
+        setTime(true);
+        while(setTime(false))
           delay(100);
         Serial.println("OK");
         break;

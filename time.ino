@@ -35,7 +35,41 @@ void printTime()
   }
 }
 
-boolean setTime()
+void adjustTime(int month, int day, int year, int hour, int minute, int second, int pmInt)
+{
+  boolean pm;
+
+  DateTime now = RTC.now();
+
+  if (month == 0)
+    month = now.month();
+
+  if (day == 0)
+    day = now.day();
+
+  if (year == 0)
+    year = now.year();
+
+  if (hour == 0)
+    hour = now.hour();
+
+  if (minute == 0)
+    minute = now.minute();
+
+  if (second == 0)
+    second = now.second();
+
+  if (pmInt < 0)
+    pm = now.isPM();
+  else if (pmInt > 0)
+    pm = true;
+  else
+    pm = false;
+
+  RTC.adjust(DateTime(year, month, day, hour, minute, second, pm));
+}
+
+boolean setTime(boolean update)
 {
   static int month = 0;
   static int day = 0;
@@ -43,7 +77,20 @@ boolean setTime()
   static int hour = 0;
   static int minute = 0;
   static int second = 0;
-  static boolean pm = false;
+  static int pm = -1;
+ 
+  if (update)
+  {
+    month = 0;
+    day = 0;
+    year = 0;
+    hour = 0;
+    minute = 0;
+    second = 0;
+    pm = -1;
+
+    return false;
+  }
 
   if (Serial.available() > 0)
   {
@@ -70,16 +117,16 @@ boolean setTime()
         second = Serial.parseInt();
         break;
       case 't':
-        pm = Serial.parseInt() != 0;
+        pm = Serial.parseInt();
         break;
       case '+':
-        RTC.adjust(DateTime(year,month,day,hour,minute,second,pm));
+        adjustTime(month, day, year, hour, minute, second, pm);
         return false;
         break;
       default:
-        emptySerialBuffer();
         break;
     }  
   }
+
   return true;
 }
